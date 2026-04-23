@@ -282,10 +282,21 @@ function buildZIP (ents, data) {
             if (encoding != 'base64')
                 throw new Error(`Unsupported encoding for ${ent.name} (${ent.id}): ${encoding}`);
             if (zip.file(filepath)) {
-                //if filename already exists, add a numbered suffix.
-                const count = Number(filepath.match(/^.*_([0-9]*)\.[^\.]*$/)?.at(1));
-                if (count) filepath = filepath.replace(/^(.*_)[0-9]*(\.[^\.]*)$/,`$1${count + 1}$2`);
-                else filepath = filepath.replace(/^(.*)(\.[^\.]*)$/,`$1_2$2`);
+                // file already exists in the zip so we need to find a unique name for it
+                // split the full path into the folder/directory part and the filename part
+                const slashIdx = filepath.lastIndexOf('/');
+                const dir = slashIdx >= 0 ? filepath.substring(0, slashIdx + 1) : '';
+                const filename = slashIdx >= 0 ? filepath.substring(slashIdx + 1) : filepath;
+                // split the filename into base and extension so we can stick the suffix in before the dot
+                // we use lastIndexOf on just the filename so dots in directory names dont mess things up
+                const dotIdx = filename.lastIndexOf('.');
+                const base = dotIdx >= 0 ? filename.substring(0, dotIdx) : filename;
+                const ext = dotIdx >= 0 ? filename.substring(dotIdx) : '';
+                // start at 2 since the original file already took the unsuffixed slot
+                let counter = 2;
+                // keep incrementing until we find a name thats not already in the zip
+                while (zip.file(`${dir}${base}_${counter}${ext}`)) counter++;
+                filepath = `${dir}${base}_${counter}${ext}`;
             }
             zip.file(filepath, data[ent.id].response.content.text, { base64: true });
         } catch (e) {
