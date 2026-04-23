@@ -282,7 +282,7 @@ function buildZIP (ents, data) {
             if (encoding != 'base64')
                 throw new Error(`Unsupported encoding for ${ent.name} (${ent.id}): ${encoding}`);
             if (zip.file(filepath)) {
-                //if filename already exists, add a numbered suffix
+                //if filename already exists, add a numbered suffix.
                 const count = Number(filepath.match(/^.*_([0-9]*)\.[^\.]*$/)?.at(1));
                 if (count) filepath = filepath.replace(/^(.*_)[0-9]*(\.[^\.]*)$/,`$1${count + 1}$2`);
                 else filepath = filepath.replace(/^(.*)(\.[^\.]*)$/,`$1_2$2`);
